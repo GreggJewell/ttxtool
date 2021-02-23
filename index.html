@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html manifest="ttxtool.manifest" lang="en">
+<head>
+	<link rel="icon" type="image/png" href="apple-touch-icon.png">
+	<title>TTX Tool</title>
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+	<meta http-equiv="Expires" content="0" />
+	<meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta name="description" content="TTX Tool">
+	<meta name="author" content="Codemmandos">
+	<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+	<link rel="apple-touch-startup-image" href="startup.png" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" />
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lekton&display=swap" />
+</head>
+<style>
+* {
+	box-sizing: border-box;
+	font-family: 'Lekton', 'Lucida Console', Sans-serif;
+	margin: 0;
+	outline: none;
+	padding: 0;
+}
+body {
+	align-items: center;
+	background-color: #000000;
+	color: #FFFFFF;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 100vh;
+}
+#stopwatch {
+	align-items: center;
+	cursor: default;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+select {
+	-webkit-appearance: none;
+	background-color: #222222;
+	border: 0;
+	border-radius: 5px;
+}
+select[disabled] {
+	background-color: #000000;
+	border-radius: 0;
+}
+select::-webkit-scrollbar              { width: 10px; }
+select::-webkit-scrollbar-thumb        { background: #555555; border-radius: 5px; }
+#date {
+	color: #EEEEEE;
+	font-size: 50px;
+}
+#date select {
+	color: #EEEEEE;
+	font-size: 50px;
+}
+#date select[disabled] {
+	color: #EEEEEE !important;
+}
+#time {
+	color: #FFFFFF;
+	font-size: 100px;
+	font-weight: 600;
+}
+#time select {
+	color: #FFFFFF;
+	font-size: 100px;
+	font-weight: 600;
+}
+#time select:disabled {
+	color: #FFFFFF;
+}
+#time option {
+	font-weight: 600;
+}
+#actions {
+	align-items: center;
+	display: flex;
+	margin-top: 25px;
+}
+#timer-actions, #speed-actions {
+	align-items: center;
+	display: flex;
+}
+.action {
+	align-items: center;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+}
+.timer.action {
+	border-radius: 50%;
+	height: 100px;
+	font-size: 20px;
+	font-weight: 600;
+	margin: 5px;
+	padding: 15px;
+	width: 100px;
+}
+.start.timer {
+	background-color: #0A6640;
+	border: solid 3px #3DCC91;
+	color: #3DCC91;
+}
+.stop.timer {
+	background-color: #A82A2A;
+	border: solid 3px #FF7373;
+	color: #FF7373;
+}
+.reset.timer {
+	background-color: #444444;
+	border: solid 3px #888888;
+	color: #888888;
+}
+.reset.timer[disabled] {
+	background-color: #111111;
+	border: solid 3px #222222;
+	color: #222222;
+	cursor: not-allowed;
+}
+.speed.action {
+	background-color: #0E5A8A;
+	border: 0;
+	border-radius: 5px;
+	color: #48AFF0;
+	font-size: 16px;
+	font-weight: 600;
+	height: 42px;
+	margin: 5px;
+	padding: 15px;
+	position: relative;
+	width: 50px;
+}
+.speed.action[disabled]:after {
+	background: rgba(0,0,0,0.5);
+	border-radius: 5px;
+	content: '';
+	cursor: not-allowed;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
+}
+.active.speed {
+	background-color: #48AFF0;
+	color: #0E5A8A;
+	font-weight: 600;
+}
+.hidden {
+	display: none !important;
+}
+
+@media only screen and (max-width: 600px) {
+	#date, #date select {
+		font-size: 36px;
+	}
+	#time, #time select {
+		font-size: 72px;
+	}
+	.timer.action {
+		font-size: 16px;
+		height: 72px;
+		width: 72px;
+	}
+	.speed.action {
+		font-size: 12px;
+		height: 36px;	
+		width: 40px;
+	}
+}
+@media (hover: hover) and (pointer: fine) {
+	button.start.timer:hover {
+		background-color: #0D8050;
+	}
+	button.stop.timer:hover {
+		background-color: #C23030;
+	}
+	button.reset.timer:not([disabled]):hover {
+		background-color: #555555;
+	}
+	button.speed:not(.active):hover {
+		background-color: #106BA3;
+	}
+}
+</style>
+<body>
+<div id="stopwatch">
+
+	<div id="date">
+		<select name="month" id="month" onchange="getUITimes();">
+			<option value="01" selected>01</option>
+			<option value="02">02</option>
+			<option value="03">03</option>
+			<option value="04">04</option>
+			<option value="05">05</option>
+			<option value="06">06</option>
+			<option value="07">07</option>
+			<option value="08">08</option>
+			<option value="09">09</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12">12</option>
+		</select>/<select name="day" id="day" onchange="getUITimes();">
+			<option value="01">01</option>
+			<option value="02">02</option>
+			<option value="03">03</option>
+			<option value="04">04</option>
+			<option value="05">05</option>
+			<option value="06">06</option>
+			<option value="07">07</option>
+			<option value="08">08</option>
+			<option value="09">09</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12">12</option>
+			<option value="13">13</option>
+			<option value="14">14</option>
+			<option value="15">15</option>
+			<option value="16">16</option>
+			<option value="17">17</option>
+			<option value="18">18</option>
+			<option value="19">19</option>
+			<option value="20">20</option>
+			<option value="21">21</option>
+			<option value="22">22</option>
+			<option value="23">23</option>
+			<option value="24">24</option>
+			<option value="25">25</option>
+			<option value="26">26</option>
+			<option value="27" selected>27</option>
+			<option value="28">28</option>
+			<option value="29">29</option>
+			<option value="30">30</option>
+			<option value="31">31</option>
+		</select>/<select name="year" id="year" onchange="getUITimes();">
+			<option value="2016">2016</option>
+			<option value="2017">2017</option>
+			<option value="2018">2018</option>
+			<option value="2019">2019</option>
+			<option value="2020">2020</option>
+			<option value="2021" selected>2021</option>
+		</select>
+	</div>
+	<div id="time">
+		<select name="hours" id="hours" onchange="getUITimes();">
+			<option value="00">00</option>
+			<option value="01">01</option>
+			<option value="02">02</option>
+			<option value="03">03</option>
+			<option value="04">04</option>
+			<option value="05">05</option>
+			<option value="06">06</option>
+			<option value="07">07</option>
+			<option value="08">08</option>
+			<option value="09">09</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12">12</option>
+			<option value="13">13</option>
+			<option value="14">14</option>
+			<option value="15">15</option>
+			<option value="16">16</option>
+			<option value="17">17</option>
+			<option value="18">18</option>
+			<option value="19">19</option>
+			<option value="20">20</option>
+			<option value="21">21</option>
+			<option value="22">22</option>
+			<option value="23" selected>23</option>
+		</select>:<select name="minutes" id="minutes" onchange="getUITimes();">
+			<option value="00">00</option>
+			<option value="01">01</option>
+			<option value="02">02</option>
+			<option value="03">03</option>
+			<option value="04">04</option>
+			<option value="05">05</option>
+			<option value="06">06</option>
+			<option value="07">07</option>
+			<option value="08">08</option>
+			<option value="09">09</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12">12</option>
+			<option value="13">13</option>
+			<option value="14">14</option>
+			<option value="15">15</option>
+			<option value="16">16</option>
+			<option value="17">17</option>
+			<option value="18">18</option>
+			<option value="19">19</option>
+			<option value="20">20</option>
+			<option value="21">21</option>
+			<option value="22">22</option>
+			<option value="23">23</option>
+			<option value="24">24</option>
+			<option value="25">25</option>
+			<option value="26">26</option>
+			<option value="27">27</option>
+			<option value="28">28</option>
+			<option value="29">29</option>
+			<option value="30" selected>30</option>
+			<option value="31">31</option>
+			<option value="32">32</option>
+			<option value="33">33</option>
+			<option value="34">34</option>
+			<option value="35">35</option>
+			<option value="36">36</option>
+			<option value="37">37</option>
+			<option value="38">38</option>
+			<option value="39">39</option>
+			<option value="40">40</option>
+			<option value="41">41</option>
+			<option value="42">42</option>
+			<option value="43">43</option>
+			<option value="44">44</option>
+			<option value="45">45</option>
+			<option value="46">46</option>
+			<option value="47">47</option>
+			<option value="48">48</option>
+			<option value="49">49</option>
+			<option value="51">50</option>
+			<option value="51">51</option>
+			<option value="52">52</option>
+			<option value="53">53</option>
+			<option value="54">54</option>
+			<option value="55">55</option>
+			<option value="56">56</option>
+			<option value="57">57</option>
+			<option value="58">58</option>
+			<option value="59">59</option>
+		</select>:<select name="seconds" id="seconds" onchange="getUITimes();">
+			<option value="00">00</option>
+			<option value="01">01</option>
+			<option value="02">02</option>
+			<option value="03">03</option>
+			<option value="04">04</option>
+			<option value="05">05</option>
+			<option value="06">06</option>
+			<option value="07">07</option>
+			<option value="08">08</option>
+			<option value="09">09</option>
+			<option value="10">10</option>
+			<option value="11">11</option>
+			<option value="12">12</option>
+			<option value="13">13</option>
+			<option value="14">14</option>
+			<option value="15">15</option>
+			<option value="16">16</option>
+			<option value="17">17</option>
+			<option value="18">18</option>
+			<option value="19">19</option>
+			<option value="20">20</option>
+			<option value="21">21</option>
+			<option value="22">22</option>
+			<option value="23">23</option>
+			<option value="24">24</option>
+			<option value="25">25</option>
+			<option value="26">26</option>
+			<option value="27">27</option>
+			<option value="28">28</option>
+			<option value="29">29</option>
+			<option value="30">30</option>
+			<option value="31">31</option>
+			<option value="32">32</option>
+			<option value="33">33</option>
+			<option value="34">34</option>
+			<option value="35">35</option>
+			<option value="36">36</option>
+			<option value="37">37</option>
+			<option value="38">38</option>
+			<option value="39">39</option>
+			<option value="40">40</option>
+			<option value="41">41</option>
+			<option value="42">42</option>
+			<option value="43">43</option>
+			<option value="44">44</option>
+			<option value="45">45</option>
+			<option value="46">46</option>
+			<option value="47">47</option>
+			<option value="48">48</option>
+			<option value="49">49</option>
+			<option value="50">50</option>
+			<option value="51">51</option>
+			<option value="52">52</option>
+			<option value="53">53</option>
+			<option value="54">54</option>
+			<option value="55">55</option>
+			<option value="56">56</option>
+			<option value="57">57</option>
+			<option value="58">58</option>
+			<option value="59">59</option>
+		</select>Z
+	</div>
+</div>
+<div id="actions">
+	<div id="timer-actions">
+		<button title="Reset" class="reset timer action" onclick="resetStopwatch()" disabled>Reset</button>
+		<button title="Start" class="start timer action" onclick="startStopwatch()">Start</button>
+		<button title="Stop (Pause)" class="stop timer action hidden" onclick="stopStopwatch()">Stop</button>
+	</div>
+	<div id="speed-actions">
+		<button title="1x speed" class="active speed action" speed="1" onclick="changeSpeed(this)">1x</button>
+		<button title="5x speed" class="speed action" speed="5" onclick="changeSpeed(this)">5x</button>
+		<button title="10x speed" class="speed action" speed="10" onclick="changeSpeed(this)">10x</button>
+		<button title="20x speed" class="speed action" speed="20" onclick="changeSpeed(this)">20x</button>
+	</div>
+</div>
+<script type="text/javascript">
+var UI = {};
+UI['month'] = document.querySelector('#month');
+UI['day'] = document.querySelector('#day');
+UI['year'] = document.querySelector('#year');
+UI['hours'] = document.querySelector('#hours');
+UI['minutes'] = document.querySelector('#minutes');
+UI['seconds'] = document.querySelector('#seconds');
+UI['start'] = document.querySelector('.start.timer');
+UI['stop'] = document.querySelector('.stop.timer');
+UI['reset'] = document.querySelector('.reset.timer');
+UI['selections'] = document.querySelectorAll('select');
+
+var STOPWATCH = {};
+STOPWATCH['paused'] = false;
+STOPWATCH['running'] = false;
+STOPWATCH['speed'] = 1;
+
+//changeUItoNow();
+function changeUItoNow() {
+	var now = new Date();
+	UI['month'].value = ("0" + (now.getUTCMonth() + 1)).slice(-2);
+	UI['day'].value = ("0" + now.getUTCDate()).slice(-2);
+	UI['year'].value = now.getUTCFullYear();
+	UI['hours'].value = ("0" + now.getUTCHours()).slice(-2);
+	UI['minutes'].value = ("0" + now.getUTCMinutes()).slice(-2);
+	UI['seconds'].value = ("0" + now.getUTCSeconds()).slice(-2);
+}
+
+
+getUITimes();
+function getUITimes() {
+	STOPWATCH['resetMonth'] = Number(UI['month'].value) - 1;
+	STOPWATCH['resetDay'] = Number(UI['day'].value);
+	STOPWATCH['resetYear'] = Number(UI['year'].value);
+	STOPWATCH['resetHours'] = Number(UI['hours'].value);
+	STOPWATCH['resetMinutes'] = Number(UI['minutes'].value);
+	STOPWATCH['resetSeconds'] = Number(UI['seconds'].value);
+	
+	resetTimes();
+}
+function resetTimes() {
+	STOPWATCH['setMonth'] = STOPWATCH['resetMonth']
+	STOPWATCH['setDay'] = STOPWATCH['resetDay'];
+	STOPWATCH['setYear'] = STOPWATCH['resetYear'];
+	STOPWATCH['setHours'] = STOPWATCH['resetHours'];
+	STOPWATCH['setMinutes'] = STOPWATCH['resetMinutes'];
+	STOPWATCH['setSeconds'] = STOPWATCH['resetSeconds'];
+}
+
+function startStopwatch() {
+	if (STOPWATCH['running'] == false) {
+		STOPWATCH['setDate'] = new Date(STOPWATCH['setYear'], STOPWATCH['setMonth'], STOPWATCH['setDay'], STOPWATCH['setHours'], STOPWATCH['setMinutes'], STOPWATCH['setSeconds']);
+		
+		STOPWATCH['referenceTime'] = new Date().getTime();
+		STOPWATCH['interval'] = setInterval(updateTime, 10);
+		
+		STOPWATCH['paused'] = false;
+		STOPWATCH['running'] = true;
+		
+		UI['start'].classList.add('hidden');
+		UI['stop'].classList.remove('hidden');
+		UI['reset'].setAttribute('disabled',true);
+		
+		for (var s = 0; s < UI['selections'].length; s++) {
+			UI['selections'][s].setAttribute('disabled',true);
+		}
+	}
+}
+
+function stopStopwatch() {
+	if (STOPWATCH['paused'] == false) {
+		clearInterval(STOPWATCH['interval']);
+		STOPWATCH['savedTime'] = STOPWATCH['difference'];
+		STOPWATCH['paused'] = true;
+		STOPWATCH['running'] = false;
+		
+		UI['start'].classList.remove('hidden');
+		UI['stop'].classList.add('hidden');
+		UI['reset'].removeAttribute('disabled');
+	}
+}
+
+function resetStopwatch() {
+	clearInterval(STOPWATCH['interval']);
+	STOPWATCH['savedTime'] = '';
+	STOPWATCH['difference'] = '';
+	STOPWATCH['paused'] = false;
+	STOPWATCH['running'] = false;
+	
+	UI['month'].value = ("0" + Number(STOPWATCH['resetMonth']) + 1).slice(-2);
+	UI['day'].value = ("0" + STOPWATCH['resetDay']).slice(-2);
+	UI['year'].value = STOPWATCH['resetYear'];
+	UI['hours'].value = ("0" + STOPWATCH['resetHours']).slice(-2);
+	UI['minutes'].value = ("0" + STOPWATCH['resetMinutes']).slice(-2);
+	UI['seconds'].value = ("0" + STOPWATCH['resetSeconds']).slice(-2);
+	
+	resetTimes();
+	
+	UI['start'].classList.remove('hidden');
+	UI['stop'].classList.add('hidden');
+	UI['reset'].setAttribute('disabled',true);
+	
+	for (var s = 0; s < UI['selections'].length; s++) {
+		UI['selections'][s].removeAttribute('disabled');
+	}
+}
+
+function updateTime() {
+	STOPWATCH['updatedTime'] = new Date().getTime();
+	if (STOPWATCH['savedTime'] !== undefined && STOPWATCH['savedTime'] !== '') {
+		STOPWATCH['difference'] = ((STOPWATCH['updatedTime'] - STOPWATCH['referenceTime']) * STOPWATCH['speed']) + STOPWATCH['savedTime'];
+	} 
+	else {
+		STOPWATCH['difference'] = ((STOPWATCH['updatedTime'] - STOPWATCH['referenceTime']) * STOPWATCH['speed']);
+	}
+	
+	var newDate = new Date(Number(STOPWATCH['setDate']) + STOPWATCH['difference']);
+
+	UI['month'].value = ("0" + (newDate.getMonth() + 1)).slice(-2);
+	UI['day'].value = ("0" + newDate.getDate()).slice(-2);
+	UI['year'].value = newDate.getFullYear();
+	UI['hours'].value = ("0" + newDate.getHours()).slice(-2);
+	UI['minutes'].value = ("0" + newDate.getMinutes()).slice(-2);
+	UI['seconds'].value = ("0" + newDate.getSeconds()).slice(-2);
+}
+function changeSpeed(speed) {
+	var speeds = document.querySelectorAll('[speed]');
+	for (var s = 0; s < speeds.length; s++) {
+		speeds[s].classList.remove('active'); 
+	}
+	STOPWATCH['speed'] = speed.getAttribute('speed');
+	speed.classList.add('active');
+	
+	if (STOPWATCH['paused'] == false && STOPWATCH['difference'] > 0) {
+		clearInterval(STOPWATCH['interval']);
+		STOPWATCH['savedTime'] = STOPWATCH['difference'];
+		STOPWATCH['paused'] = true;
+		STOPWATCH['running'] = false;
+		startStopwatch();
+	}
+}
+</script>
+</body>
+</html>
